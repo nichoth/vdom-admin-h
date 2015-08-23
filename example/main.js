@@ -4,16 +4,24 @@ var dashboard = require('../');
 var items = {
   videos: {
     name: 'videos',
-    el: h('div', ['video section'])
+    list: function(data) {
+      return h('ul', data.rows.map(function(video) {
+        return h('li', [video.name + ' - ' + video.description]);
+      }));
+    }
   },
   photos: {
     name: 'photos',
-    el: h('div', ['photos section'])
+    list: function(data) {
+      return h('div', ['photos section']);
+    }
   },
   music: {
     name: 'music',
-    el: h('div', ['music section'])
+    list: function(data) {
+      return h('div', ['music section']);
+    }
   }
 };
 
-dashboard( items, {el: document.getElementById('content')} );
+dashboard( items, { el: document.getElementById('content') } );

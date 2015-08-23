@@ -5,6 +5,7 @@ var url = require('url');
 var catcher = require('catch-links');
 var singlePage = require('single-page');
 var router = require('routes')();
+var store = require('./lib/store.js')();
 
 module.exports = function(items, opts) {
 
@@ -16,8 +17,13 @@ module.exports = function(items, opts) {
   });
 
   Object.keys(items).forEach(function(key) {
-    router.addRoute('/' + items[key].name, function() {
-      return items[key];
+    router.addRoute('/' + items[key].name, function(update) {
+
+      store.fetch(items[key].name).then(function(data) {
+        console.log(arguments);
+        update( items[key], items[key].list(data) );
+      });
+
     });
   });
 
@@ -25,8 +31,9 @@ module.exports = function(items, opts) {
     var path = url.parse(href).pathname;
     var m = router.match(path);
     if (m) {
-      var item = m.fn();
-      loop.update({ activeItem: item });
+      m.fn(function(item, page) {
+        loop.update({ activeItem: item, page: page });
+      });
     }
   });
 
@@ -42,7 +49,7 @@ module.exports = function(items, opts) {
   var render = function(state) {
     return h('div', [
       Sidebar(state.activeItem),
-      (state.activeItem ? state.activeItem.el : '')
+      state.page
     ]);
   };
 
