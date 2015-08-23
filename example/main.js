@@ -1,42 +1,64 @@
 var h = require('virtual-dom/h');
 var vdom = require('virtual-dom');
 var main = require('main-loop');
-var Dashboard = require('../Dashboard.js');
+var url = require('url');
 
-var data = {
-  typesOfThings: ['videos', 'photos', 'music'],
-  active: ''
+var s = {
+  typesOfThings: {
+    videos: {
+      name: 'videos',
+      el: h('div', ['video section'])
+    },
+    photos: {
+      name: 'photos',
+      el: h('div', ['photos section'])
+    },
+    music: {
+      name: 'music',
+      el: h('div', ['music section'])
+    }
+  }
 };
 
-var TextArea = function() {
-  return h('div', [
-    h('textarea')
-  ]);
-};
 
-var Video = function() {
-  return h('div', [
-    h('h2', ['video section']),
-    h('div', ['description field']),
-    TextArea(),
-    h('div', ['upload widget'])
-  ]);
-};
+var catcher = require('catch-links');
+var singlePage = require('single-page');
+var router = require('routes')();
 
-function onSelect(item) {
-  data.active = item == 'videos' ? Video() : h('div', [item]);
-  loop.update(data);
+router.addRoute('/', function() {
+  return h('div');
+});
+
+Object.keys(s.typesOfThings).forEach(function(key) {
+  router.addRoute('/' + s.typesOfThings[key].name, function() {
+    return s.typesOfThings[key];
+  });
+});
+
+var show = singlePage(function(href) {
+  var path = url.parse(href).pathname;
+  var m = router.match(path);
+  if (m) {
+    var item = m.fn();
+    loop.update({ activeItem: item });
+  }
+});
+
+catcher(document.getElementById('content'), function(href) {
+  show(href);
+});
+
+function onSelect(ev, item) {
+  console.log(ev.target + ' clicked');
 }
 
-function onSave(ev) {
-  console.log(this);
-  console.log(ev.target);
-}
-
+var Sidebar = require('../Sidebar.js')(s.typesOfThings, onSelect);
 var render = function(state) {
-  return Dashboard( state, {onSave: onSave, onSelect: onSelect} );
+  return h('div', [
+    Sidebar(state.activeItem),
+    (state.activeItem ? state.activeItem.el : '')
+  ]);
 };
 
-var loop = main(data, render, vdom);
-
+var loop = main({}, render, vdom);
 document.querySelector('#content').appendChild(loop.target);

@@ -1,7 +1,6 @@
 {
   "name": "virtual-dom-starter-babel-es6-jsx",
-  "browserify": {
-  },
+  "browserify": {},
   "scripts": {
     "build-example": "browserify example/main.js | uglifyjs -cm > example/bundle.js",
     "start": "ecstatic -p 8000 example",
@@ -9,8 +8,11 @@
     "dev": "npm run watch & npm run start"
   },
   "dependencies": {
+    "catch-links": "^2.0.0",
     "ecstatic": "~0.8.0",
     "main-loop": "^3.1.0",
+    "routes": "^2.1.0",
+    "single-page": "^1.0.0",
     "uglifyjs": "~2.4.10",
     "virtual-dom": "^2.0.1",
     "watchify": "^3.2.3"

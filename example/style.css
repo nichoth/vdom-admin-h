@@ -1,0 +1,9 @@
+.lil-ui-sidebar {
+  list-style: none;
+  padding: 0;
+  padding-left: 1em;
+}
+
+a.active {
+  font-weight: bold;
+}
