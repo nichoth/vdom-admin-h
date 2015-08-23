@@ -1,33 +1,52 @@
 var h = require('virtual-dom/h');
 var vdom = require('virtual-dom');
 var main = require('main-loop');
-var TextArea = require('./lib/TextArea.js');
-var Dashboard = require('../Dashboard.js');
+var url = require('url');
+var catcher = require('catch-links');
+var singlePage = require('single-page');
+var router = require('routes')();
 
-router.addRoute('/', function() {
+module.exports = function(items, opts) {
 
-});
-
-router.addRoute('/videos', function() {
-  return Video();
-});
-
-var show = singlePage(function(href) {
-  var m = router.match(href);
-  if (m) {
-    loop.update({page: m.fn()});
-  }
-
-});
-
-module.exports = function(things, opts) {
   opts = opts || {};
   opts.el = opts.el || document.body;
 
-  var render = function(things) {
-    return Dashboard( things, {onSave: onSave, onSelect: onSelect} );
+  router.addRoute('/', function() {
+    return h('div');
+  });
+
+  Object.keys(items).forEach(function(key) {
+    router.addRoute('/' + items[key].name, function() {
+      return items[key];
+    });
+  });
+
+  var show = singlePage(function(href) {
+    var path = url.parse(href).pathname;
+    var m = router.match(path);
+    if (m) {
+      var item = m.fn();
+      loop.update({ activeItem: item });
+    }
+  });
+
+  catcher(document.getElementById('content'), function(href) {
+    show(href);
+  });
+
+  function onSelect(ev, item) {
+    console.log(ev.target + ' clicked');
+  }
+
+  var Sidebar = require('./Sidebar.js')(items, onSelect);
+  var render = function(state) {
+    return h('div', [
+      Sidebar(state.activeItem),
+      (state.activeItem ? state.activeItem.el : '')
+    ]);
   };
 
-  var loop = main(things, render, vdom);
-  el.appendChild(loop.target);
+  var loop = main({}, render, vdom);
+  opts.el.appendChild(loop.target);
+
 };
